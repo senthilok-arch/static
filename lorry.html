@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorry to Giant Robot Transformer</title>
+    <style>
+        :root {
+            --speed: 1s;
+            --lorry-red: #cc0000;
+            --container-blue: #1a3a5a;
+            --metal: #333;
+            --glow: 0 0 15px #00f2ff;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            overflow: hidden;
+            perspective: 2000px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .ui-panel {
+            position: absolute;
+            bottom: 50px;
+            z-index: 10;
+        }
+
+        button {
+            background: #111;
+            color: #fff;
+            border: 2px solid #555;
+            padding: 15px 40px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            border-color: var(--glow);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+        }
+
+        /* The Transformer Stage */
+        .stage {
+            width: 400px;
+            height: 300px;
+            transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(-30deg);
+            transition: transform 1.2s ease-in-out;
+        }
+
+        /* Robot View Adjustment */
+        .active .stage {
+            transform: rotateX(-10deg) rotateY(10deg) translateY(-50px);
+        }
+
+        .part {
+            position: absolute;
+            transition: all var(--speed) cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- LORRY COMPONENTS --- */
+
+        /* Front Cabin (Robot Chest) */
+        .cabin {
+            width: 80px; height: 90px;
+            left: 60px; top: 150px;
+            background: var(--lorry-red);
+            border-radius: 5px 15px 5px 5px;
+            z-index: 5;
+        }
+        .active .cabin {
+            transform: translateY(-80px) scale(1.4);
+            border-radius: 5px;
+        }
+
+        /* The Container (Robot Legs & Shoulders) */
+        .container-main {
+            width: 220px; height: 100px;
+            left: 140px; top: 140px;
+            background: var(--container-blue);
+            border: 1px solid #000;
+        }
+        /* Splitting the container into two legs in Robot Mode */
+        .active .container-main {
+            width: 40px; height: 180px;
+            left: 130px; top: 100px;
+            transform: translateX(-40px) translateY(50px);
+        }
+
+        /* Second half of container for the other leg */
+        .container-right {
+            width: 220px; height: 100px;
+            left: 140px; top: 140px;
+            background: var(--container-blue);
+            opacity: 0;
+        }
+        .active .container-right {
+            opacity: 1;
+            width: 40px; height: 180px;
+            left: 210px; top: 100px;
+            transform: translateX(-40px) translateY(50px);
+        }
+
+        /* Wheels (Robot Joints/Armor) */
+        .wheel {
+            width: 30px; height: 30px;
+            background: #111;
+            border-radius: 50%;
+            border: 4px dashed #333;
+            bottom: -15px;
+        }
+        .w1 { left: 10px; } .w2 { left: 45px; } 
+        .w3 { left: 150px; } .w4 { left: 190px; }
+
+        .active .wheel {
+            border-radius: 5px;
+            background: var(--metal);
+            transform: rotateY(90deg);
+        }
+
+        /* Head (Hides inside cabin) */
+        .head {
+            width: 30px; height: 30px;
+            background: #444;
+            left: 85px; top: 160px;
+            opacity: 0;
+            border-top: 4px solid var(--glow);
+        }
+        .active .head {
+            opacity: 1;
+            transform: translateY(-135px);
+            box-shadow: var(--glow);
+        }
+
+        /* Arms (Sides of the cabin) */
+        .arm {
+            width: 20px; height: 60px;
+            background: var(--lorry-red);
+            top: 160px; left: 80px;
+            opacity: 0;
+        }
+        .active .arm { opacity: 1; height: 120px; }
+        .active .arm.left { transform: translateX(-80px) translateY(-80px) rotateZ(10deg); }
+        .active .arm.right { transform: translateX(110px) translateY(-80px) rotateZ(-10deg); }
+
+        /* Window / Eyes */
+        .window {
+            position: absolute;
+            width: 60px; height: 30px;
+            background: #222;
+            top: 15px; left: 10px;
+        }
+        .active .window {
+            background: #00f2ff;
+            box-shadow: var(--glow);
+            height: 10px; top: 40px;
+        }
+
+        /* Smoke Stack / Weapon */
+        .exhaust {
+            width: 10px; height: 40px;
+            background: #666;
+            left: 70px; top: 115px;
+        }
+        .active .exhaust {
+            transform: translateY(-50px) rotateX(90deg);
+            background: var(--metal);
+        }
+
+        .ground {
+            position: absolute;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, #111 0%, transparent 70%);
+            transform: rotateX(90deg) translateZ(-50px);
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-panel">
+        <button onclick="document.body.classList.toggle('active')">TRANSFORM</button>
+    </div>
+
+    <div class="stage">
+        <div class="ground"></div>
+        
+        <div class="part cabin">
+            <div class="window"></div>
+            <div class="part wheel w1"></div>
+            <div class="part wheel w2"></div>
+        </div>
+
+        <div class="part head"></div>
+        <div class="part arm left"></div>
+        <div class="part arm right"></div>
+        <div class="part exhaust"></div>
+
+        <div class="part container-main">
+            <div class="part wheel w3"></div>
+            <div class="part wheel w4"></div>
+        </div>
+        <div class="part container-right"></div>
+
+    </div>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 30;
+            const y = (window.innerHeight / 2 - e.pageY) / 30;
+            const stage = document.querySelector('.stage');
+            if(!document.body.classList.contains('active')) {
+                stage.style.transform = `rotateX(${-15 + y}deg) rotateY(${-30 + x}deg)`;
+            } else {
+                stage.style.transform = `rotateX(${-10 + y}deg) rotateY(${10 + x}deg)`;
+            }
+        });
+    </script>
+</body>
+</html>
